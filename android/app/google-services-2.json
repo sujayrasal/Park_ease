@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "457724897600",
+    "project_id": "parkease-new",
+    "storage_bucket": "parkease-new.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:457724897600:android:02307e79d17d2776daf2a5",
+        "android_client_info": {
+          "package_name": "com.example.smart_parking_app_new"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACYtPkp0vCELtGCqdNorNjz9X8UuCJGM8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
