@@ -30,80 +30,122 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.teal[50],
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.center,
-              child: Text(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF00BCD4), // Cyan
+              Color(0xFF2196F3), // Blue
+              Color(0xFF9C27B0), // Purple
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+              // App Title with matching style
+              const Text(
                 'ParkEase',
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal[800],
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black26,
+                      offset: Offset(0, 2),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: splashData.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                itemBuilder: (context, index) => SplashContent(
-                  image: splashData[index]["image"]!,
-                  text: splashData[index]["text"]!,
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                splashData.length,
-                (index) => buildDot(index),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_currentIndex == splashData.length - 1) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
-                    );
-                  } else {
-                    _controller.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 20),
+              // Content area with white background
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 20),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
                   ),
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: Text(
-                  _currentIndex == splashData.length - 1
-                      ? "Get Started"
-                      : "Next",
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 30),
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _controller,
+                          itemCount: splashData.length,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentIndex = index;
+                            });
+                          },
+                          itemBuilder: (context, index) => SplashContent(
+                            image: splashData[index]["image"]!,
+                            text: splashData[index]["text"]!,
+                          ),
+                        ),
+                      ),
+                      // Dot indicators
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          splashData.length,
+                          (index) => buildDot(index),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      // Button with matching login screen style
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_currentIndex == splashData.length - 1) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => LoginScreen()),
+                              );
+                            } else {
+                              _controller.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2196F3),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            minimumSize: const Size(double.infinity, 55),
+                            elevation: 2,
+                          ),
+                          child: Text(
+                            _currentIndex == splashData.length - 1
+                                ? "Get Started"
+                                : "Next",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -116,7 +158,9 @@ class _SplashScreenState extends State<SplashScreen> {
       height: 8,
       width: _currentIndex == index ? 24 : 8,
       decoration: BoxDecoration(
-        color: _currentIndex == index ? Colors.teal : Colors.grey[400],
+        color: _currentIndex == index 
+            ? const Color(0xFF2196F3) 
+            : Colors.grey[400],
         borderRadius: BorderRadius.circular(4),
       ),
     );
@@ -135,8 +179,26 @@ class SplashContent extends StatelessWidget {
       child: Column(
         children: [
           const Spacer(),
-          Image.asset(image, height: 260),
-          const SizedBox(height: 30),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Image.asset(
+              image, 
+              height: 200,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 40),
           Text(
             text,
             textAlign: TextAlign.center,
@@ -144,6 +206,7 @@ class SplashContent extends StatelessWidget {
               fontSize: 20,
               fontWeight: FontWeight.w600,
               height: 1.4,
+              color: Colors.black87,
             ),
           ),
           const Spacer(flex: 2),
