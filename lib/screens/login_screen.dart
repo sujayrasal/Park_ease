@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      'Welcome to ParkEase',
+                      'Welcome !',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
