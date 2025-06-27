@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// Import your EditProfileScreen
-import 'edit_profile_screen.dart'; // Adjust the import path as needed
+import 'edit_profile_screen.dart';
+import 'list_parking_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,7 +17,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? userPhone;
   List<DocumentSnapshot> _userParkingSpots = [];
   bool _showParkingSpots = false;
-  bool _isAvailable = true;
 
   @override
   void initState() {
@@ -84,6 +83,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Navigation to ListParkingScreen
+  Future<void> _navigateToListParking() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ListParkingScreen(),
+      ),
+    );
+    // Refresh parking spots when returning from list parking
+    _listenToUserParkingSpots();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_showParkingSpots) return _buildParkingSpotsView();
@@ -92,13 +103,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: false, // This removes the back button
+        automaticallyImplyLeading: false,
         title: const Text(
           'ParkEase',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.black, // Black for consistency
           ),
         ),
         centerTitle: true,
@@ -113,11 +124,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.teal[200]!, width: 2),
+                border: Border.all(color: Colors.teal, width: 2), // Teal border
               ),
               child: CircleAvatar(
                 radius: 48,
-                backgroundColor: Colors.teal,
+                backgroundColor: Colors.teal, // Teal avatar background
                 child: const Icon(
                   Icons.person,
                   size: 50,
@@ -167,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: const Text(
                 "Edit Profile",
                 style: TextStyle(
-                  color: Colors.blue,
+                  color: Colors.teal, // Changed to teal
                   fontSize: 14,
                 ),
               ),
@@ -181,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildMenuItem(
                     icon: Icons.add_location_alt_outlined,
                     title: 'List Your Parking',
-                    onTap: _showAddParkingDialog,
+                    onTap: _navigateToListParking, // Updated this line
                   ),
                   _buildMenuItem(
                     icon: Icons.local_parking_outlined,
@@ -249,13 +260,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.pushReplacementNamed(context, '/login');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal[50],
-                        foregroundColor: Colors.teal,
+                        backgroundColor: Colors.teal, // Changed to teal
+                        foregroundColor: Colors.white, // White text
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
-                          side: BorderSide(color: Colors.teal[200]!),
+                          side: const BorderSide(color: Colors.teal), // Teal border
                         ),
                       ),
                       child: const Text(
@@ -288,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
         leading: Icon(
           icon,
-          color: Colors.teal,
+          color: Colors.black, // Black icon
           size: 24,
         ),
         title: Text(
@@ -315,16 +326,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const Text("ParkEase", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            const Text("ParkEase", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black)),
             const SizedBox(height: 20),
             Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const Icon(Icons.arrow_back, color: Colors.black), // Black arrow
                   onPressed: () => setState(() => _showParkingSpots = false),
                 ),
                 const SizedBox(width: 8),
-                const Text("Locations", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text("Locations", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
               ],
             ),
             const SizedBox(height: 16),
@@ -350,7 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     style: const TextStyle(color: Colors.grey)),
                                 const SizedBox(height: 6),
                                 Text("₹${data['price']}/hr",
-                                    style: const TextStyle(color: Colors.teal)),
+                                    style: const TextStyle(color: Colors.black)), // Black price
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
@@ -376,134 +387,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  void _showAddParkingDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("List Your Parking Spot",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              _buildDialogFields('Title', 1, (val) => _title = val),
-              const SizedBox(height: 15),
-              _buildDialogFields('Description', 3, (val) => _description = val),
-              const SizedBox(height: 15),
-              _buildDialogFields('Price (₹/hr)', 1, (val) => _price = val, isNumber: true),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _isAvailable,
-                    onChanged: (value) => setState(() => _isAvailable = value ?? true),
-                  ),
-                  const Text('Available'),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _clearFields();
-                      },
-                      child: const Text("Cancel"),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _submitParkingSpot();
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-                      child: const Text("Submit", style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _title = '';
-  String _description = '';
-  String _price = '';
-
-  Widget _buildDialogFields(String label, int maxLines, Function(String) onChanged, {bool isNumber = false}) {
-    return TextField(
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      maxLines: maxLines,
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      onChanged: onChanged,
-    );
-  }
-
-  void _clearFields() {
-    _title = '';
-    _description = '';
-    _price = '';
-    setState(() => _isAvailable = true);
-  }
-
-  Future<void> _submitParkingSpot() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      _showSnackBar('You must be logged in to submit a parking spot.', Colors.red);
-      return;
-    }
-
-    final title = _title.trim();
-    final description = _description.trim();
-    final priceText = _price.trim();
-
-    if (title.isEmpty || description.isEmpty || priceText.isEmpty) {
-      _showSnackBar('Please fill all fields.', Colors.red);
-      return;
-    }
-
-    final price = double.tryParse(priceText);
-    if (price == null) {
-      _showSnackBar('Please enter a valid price.', Colors.red);
-      return;
-    }
-
-    try {
-      await FirebaseFirestore.instance.collection('parkings').add({
-        'title': title,
-        'description': description,
-        'price': price,
-        'available': _isAvailable,
-        'userId': user.uid,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-      _showSnackBar('Data successfully submitted!', Colors.teal);
-      _clearFields();
-    } catch (e) {
-      _showSnackBar('Failed to submit: $e', Colors.red);
-    }
-  }
-
-  void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
     );
   }
 }

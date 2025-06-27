@@ -58,17 +58,11 @@ class ReservationScreen extends StatelessWidget {
             'ParkEase',
             style: TextStyle(
               color: Colors.black,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
+              fontSize: 28, // Make this 28 for consistency
+              fontWeight: FontWeight.bold, // Use bold for all
             ),
           ),
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings, color: Colors.black),
-              onPressed: () {},
-            ),
-          ],
         ),
         body: Column(
           children: [

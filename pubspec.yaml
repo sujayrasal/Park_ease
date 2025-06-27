@@ -76,6 +76,7 @@ flutter:
     - assets/parking3.png
     - assets/app_iconn.png
     - assets/home_screen_logo.png
+    - assets/india_map.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

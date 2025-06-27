@@ -132,42 +132,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Container(
-              height: 180,
+              height: 240, // Increased height for a bigger image placeholder
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.teal.withOpacity(0.2)),
               ),
-              child: Stack(
-                children: [
-                  // You can use your CustomPaint for IndiaMapPainter here:
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: CustomPaint(
-                      painter: IndiaMapPainter(),
-                      child: Container(), // Ensures correct sizing
-                    ),
-                  ),
-                  // Or use an image asset instead:
-                  // ClipRRect(
-                  //   borderRadius: BorderRadius.circular(16),
-                  //   child: Image.asset(
-                  //     'assets/india_map.png',
-                  //     fit: BoxFit.cover,
-                  //   ),
-                  // ),
-                  Center(
-                    child: Text(
-                      'India Map Placeholder',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
+              // Uncommented image section:
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/india_map.png', // Replace with your actual image asset path
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
@@ -183,7 +161,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          const Text("ParkEase", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+          const Text(
+            "ParkEase",
+            style: TextStyle(
+              fontSize: 28, // Make this 28 for consistency
+              fontWeight: FontWeight.bold, // Use bold for all
+              color: Colors.black,
+            ),
+          ),
           const SizedBox(height: 20),
           Container(
             decoration: BoxDecoration(
@@ -316,12 +301,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: Colors.teal, // Changed to teal
                 borderRadius: BorderRadius.circular(25),
               ),
               child: const Text(
-                'View', // Changed from 'Book Slot' to 'View'
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                'View',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white, // White text for contrast
+                ),
               ),
             ),
           ),
