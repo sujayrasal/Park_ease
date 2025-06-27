@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+// Import your EditProfileScreen
+import 'edit_profile_screen.dart'; // Adjust the import path as needed
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -11,6 +13,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String? userName;
+  String? userEmail;
+  String? userPhone;
   List<DocumentSnapshot> _userParkingSpots = [];
   bool _showParkingSpots = false;
   bool _isAvailable = true;
@@ -18,20 +22,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserName();
+    _loadUserData();
     _listenToUserParkingSpots();
   }
 
-  Future<void> _loadUserName() async {
+  // Updated method to load more user data
+  Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
+        // Set email from Firebase Auth
+        userEmail = user.email;
+        // Load additional data from Firestore
         final doc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
         if (mounted) {
-          setState(() => userName = doc.data()?['name'] ?? 'Guest');
+          setState(() {
+            if (doc.exists) {
+              final data = doc.data() as Map<String, dynamic>;
+              userName = data['name'] ?? 'Guest';
+              userPhone = data['phone'];
+            } else {
+              userName = 'Guest';
+            }
+          });
         }
       } catch (e) {
         if (mounted) setState(() => userName = 'Guest');
@@ -54,74 +70,241 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  // Updated navigation to EditProfileScreen
+  Future<void> _navigateToEditProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const EditProfileScreen(),
+      ),
+    );
+    // Refresh user data when returning from edit profile
+    if (result != null || mounted) {
+      _loadUserData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_showParkingSpots) return _buildParkingSpotsView();
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false, // This removes the back button
+        title: const Text(
+          'ParkEase',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            const Text("ParkEase", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
-            const CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.teal,
-              child: Icon(Icons.person, color: Colors.white, size: 40),
+            // Profile Avatar and Info
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.teal[200]!, width: 2),
+              ),
+              child: CircleAvatar(
+                radius: 48,
+                backgroundColor: Colors.teal,
+                child: const Icon(
+                  Icons.person,
+                  size: 50,
+                  color: Colors.white,
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
-            Text(userName ?? "Guest", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const Text("Joined in 2025", style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 30),
-            ..._buildProfileCards(),
-            const Spacer(),
-            _buildLogoutButton(),
+            const SizedBox(height: 16),
+            Text(
+              userName ?? "Guest",
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 4),
+            // Display email if available
+            if (userEmail != null)
+              Text(
+                userEmail!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+            // Display phone if available
+            if (userPhone != null && userPhone!.isNotEmpty)
+              Text(
+                userPhone!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+            if (userEmail == null && (userPhone == null || userPhone!.isEmpty))
+              const Text(
+                "Joined in 2021",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: _navigateToEditProfile, // Updated this line
+              child: const Text(
+                "Edit Profile",
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Menu Items
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  _buildMenuItem(
+                    icon: Icons.add_location_alt_outlined,
+                    title: 'List Your Parking',
+                    onTap: _showAddParkingDialog,
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.local_parking_outlined,
+                    title: 'My Parking Spots',
+                    onTap: () => setState(() => _showParkingSpots = true),
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.directions_car_outlined,
+                    title: 'My Vehicles',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.payment_outlined,
+                    title: 'Payment Methods',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.account_balance_wallet_outlined,
+                    title: 'Wallet & Credits',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notifications',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.headset_mic_outlined,
+                    title: 'Support',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.settings_outlined,
+                    title: 'Settings',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.privacy_tip_outlined,
+                    title: 'Privacy Policy',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.description_outlined,
+                    title: 'Terms of Service',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.star_outline,
+                    title: 'Rate the App',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.help_outline,
+                    title: 'Help & FAQ',
+                    onTap: () {},
+                  ),
+                  const SizedBox(height: 32),
+                  // Logout Button
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.pushReplacementNamed(context, '/login');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal[50],
+                        foregroundColor: Colors.teal,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: Colors.teal[200]!),
+                        ),
+                      ),
+                      child: const Text(
+                        "Logout",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  List<Widget> _buildProfileCards() {
-    final cards = [
-      {'icon': Icons.add_location, 'title': 'Add Parking', 'onTap': _showAddParkingDialog},
-      {'icon': Icons.local_parking, 'title': 'My Parking Spots',
-       'onTap': () => setState(() => _showParkingSpots = true)},
-      {'icon': Icons.settings, 'title': 'Settings', 'onTap': () {}},
-      {'icon': Icons.payment, 'title': 'Payment Options', 'onTap': () {}},
-      {'icon': Icons.help_center, 'title': 'Help Center', 'onTap': () {}},
-    ];
-
-    return cards.map((card) => Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: ListTile(
-          leading: Icon(card['icon'] as IconData, color: Colors.teal),
-          title: Text(card['title'] as String),
-          trailing: card['title'] == 'My Parking Spots'
-              ? const Icon(Icons.arrow_forward_ios, size: 16)
-              : null,
-          onTap: card['onTap'] as VoidCallback,
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+        leading: Icon(
+          icon,
+          color: Colors.teal,
+          size: 24,
         ),
-      ),
-    )).toList();
-  }
-
-  Widget _buildLogoutButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () async {
-          await FirebaseAuth.instance.signOut();
-          Navigator.pushReplacementNamed(context, '/login');
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[300],
-          padding: const EdgeInsets.symmetric(vertical: 14),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Colors.black,
+          ),
         ),
-        child: const Text("Logout", style: TextStyle(color: Colors.black)),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: Colors.grey[400],
+          size: 20,
+        ),
+        onTap: onTap,
       ),
     );
   }
@@ -160,13 +343,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(data['title'] ?? '', 
+                                Text(data['title'] ?? '',
                                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 4),
-                                Text(data['description'] ?? '', 
+                                Text(data['description'] ?? '',
                                     style: const TextStyle(color: Colors.grey)),
                                 const SizedBox(height: 6),
-                                Text("₹${data['price']}/hr", 
+                                Text("₹${data['price']}/hr",
                                     style: const TextStyle(color: Colors.teal)),
                                 const SizedBox(height: 4),
                                 Row(
@@ -207,7 +390,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Add New Parking Spot", 
+              const Text("List Your Parking Spot",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
               _buildDialogFields('Title', 1, (val) => _title = val),

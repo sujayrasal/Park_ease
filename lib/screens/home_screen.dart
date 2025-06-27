@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'profile_screen.dart';
 import 'reservation_screen.dart';
+import 'booking_confirmed_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +17,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<DocumentSnapshot> _userParkingSpots = [];
   bool _showParkingSpots = false;
   bool _isAvailable = true;
-  
+
+  // Add these variables for duration selection
+  String selectedDuration = '2hr';
+  final List<String> durationOptions = ['1hr', '2hr', '4hr', '8hr', 'All Day'];
+
   final _controllers = {
     'title': TextEditingController(),
     'description': TextEditingController(),
@@ -314,7 +319,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(25),
               ),
-              child: const Text('Book Slot', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              child: const Text(
+                'View', // Changed from 'Book Slot' to 'View'
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
             ),
           ),
         ],
@@ -580,6 +588,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     TimeOfDay selectedEndTime = TimeOfDay(hour: TimeOfDay.now().hour + 2, minute: TimeOfDay.now().minute);
     selectedPaymentMethod = 'Credit Card'; // Reset on open
 
+    // Reset duration selection each time dialog opens
+    selectedDuration = '2hr';
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -782,76 +793,59 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Time Selection
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey[300]!),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Start Time', style: TextStyle(fontWeight: FontWeight.w500)),
-                              const SizedBox(height: 4),
-                              GestureDetector(
-                                onTap: () async {
-                                  final time = await showTimePicker(
-                                    context: context,
-                                    initialTime: selectedStartTime,
-                                  );
-                                  if (time != null) {
-                                    setState(() => selectedStartTime = time);
-                                  }
-                                },
-                                child: Text(
-                                  selectedStartTime.format(context),
-                                  style: const TextStyle(fontSize: 16, color: Colors.teal),
+                  // Duration Selection (replaces the time selection section)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Duration',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: durationOptions.map((duration) {
+                            final isSelected = selectedDuration == duration;
+                            return Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => selectedDuration = duration),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? Colors.teal : Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: isSelected ? Colors.teal : Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      duration,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: isSelected ? Colors.white : Colors.black,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          }).toList(),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey[300]!),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('End Time', style: TextStyle(fontWeight: FontWeight.w500)),
-                              const SizedBox(height: 4),
-                              GestureDetector(
-                                onTap: () async {
-                                  final time = await showTimePicker(
-                                    context: context,
-                                    initialTime: selectedEndTime,
-                                  );
-                                  if (time != null) {
-                                    setState(() => selectedEndTime = time);
-                                  }
-                                },
-                                child: Text(
-                                  selectedEndTime.format(context),
-                                  style: const TextStyle(fontSize: 16, color: Colors.teal),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  // Duration and Price
+                  // Duration Summary and Price
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -864,8 +858,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Duration', style: TextStyle(fontWeight: FontWeight.w500)),
-                            Text('2 hours', style: TextStyle(color: Colors.grey[600])),
+                            const Text('Duration:', style: TextStyle(fontWeight: FontWeight.w500)),
+                            Text(
+                              '$selectedDuration → Total: ${_calculateTotalCost(selectedDuration, spot['price']!)}',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
                           ],
                         ),
                         Column(
@@ -873,7 +870,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           children: [
                             const Text('Total Cost', style: TextStyle(fontWeight: FontWeight.w500)),
                             Text(
-                              '₹100',
+                              _calculateTotalCost(selectedDuration, spot['price']!),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -998,13 +995,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Book Slot Button
+                  // Book Slot Button (Updated)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
+                        final bookingDetails = {
+                          'bookingId': 'PB${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+                          'address': spot['address'] ?? '123 Elm Street, Anytown',
+                          'level': 'Underground',
+                          'spotNumber': 'Vehicle Plate: ABC 123, Sedan',
+                          'date': '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                          'time': '$selectedDuration (${selectedStartTime.format(context)} - ${selectedEndTime.format(context)})',
+                          'duration': selectedDuration,
+                          'totalCost': _calculateTotalCost(selectedDuration, spot['price']!),
+                          'parkingName': spot['name'] ?? 'Parking Spot',
+                          'paymentMethod': selectedPaymentMethod,
+                        };
+
                         Navigator.pop(context);
-                        _showSnackBar('Booking confirmed!', Colors.teal);
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookingConfirmedScreen(
+                              bookingDetails: bookingDetails,
+                            ),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal,
@@ -1106,6 +1124,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     _controllers.values.forEach((controller) => controller.dispose());
     super.dispose();
+  }
+
+  // Add this helper method for total cost calculation
+  String _calculateTotalCost(String duration, String pricePerHour) {
+    final priceMatch = RegExp(r'₹(\d+)').firstMatch(pricePerHour);
+    final hourlyRate = int.tryParse(priceMatch?.group(1) ?? '50') ?? 50;
+
+    int totalCost;
+    switch (duration) {
+      case '1hr':
+        totalCost = hourlyRate * 1;
+        break;
+      case '2hr':
+        totalCost = hourlyRate * 2;
+        break;
+      case '4hr':
+        totalCost = hourlyRate * 4;
+        break;
+      case '8hr':
+        totalCost = hourlyRate * 8;
+        break;
+      case 'All Day':
+        totalCost = hourlyRate * 24;
+        break;
+      default:
+        totalCost = hourlyRate * 2;
+    }
+    return '₹$totalCost';
   }
 }
 

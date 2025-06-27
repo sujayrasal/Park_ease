@@ -5,67 +5,238 @@ class ReservationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeBookings = [
-      {'name': '123 Elm Street', 'address': '123 Elm Street, Anytown', 'price': '₹50/hr',
-       'time': 'Today, 10:00 AM - 12:00 PM', 'status': 'Active', 'image': 'assets/parking1.png'},
-      {'name': '456 Oak Avenue', 'address': '456 Oak Avenue, Anytown', 'price': '₹60/hr',
-       'time': 'Tomorrow, 2:00 PM - 4:00 PM', 'status': 'Active', 'image': 'assets/parking2.png'},
+    final upcomingBookings = [
+      {
+        'location': 'Connaught Place, New Delhi',
+        'time': 'Today, 10:00 AM - 12:00 PM',
+        'status': 'Active',
+        'image': 'assets/parking1.png'
+      },
+      {
+        'location': 'Brigade Road, Bangalore',
+        'time': 'Tomorrow, 2:00 PM - 4:00 PM',
+        'status': 'Active',
+        'image': 'assets/parking2.png'
+      },
+      {
+        'location': 'Marine Drive, Mumbai',
+        'time': 'Next Week, 9:00 AM - 11:00 AM',
+        'status': 'Active',
+        'image': 'assets/parking3.png'
+      },
     ];
-    
+
     final pastBookings = [
-      {'name': '789 Maple Lane', 'address': '789 Maple Lane, Anytown', 'price': '₹40/hr',
-       'time': 'Yesterday, 8:00 AM - 10:00 AM', 'status': 'Completed', 'image': 'assets/parking3.png'},
+      {
+        'location': 'Khan Market, New Delhi',
+        'time': 'Yesterday, 3:00 PM - 6:00 PM',
+        'status': 'Completed',
+        'image': 'assets/parking4.png'
+      },
+      {
+        'location': 'Commercial Street, Bangalore',
+        'time': 'Last Week, 11:00 AM - 1:00 PM',
+        'status': 'Completed',
+        'image': 'assets/parking5.png'
+      },
+      {
+        'location': 'Linking Road, Mumbai',
+        'time': '2 weeks ago, 4:00 PM - 6:00 PM',
+        'status': 'Completed',
+        'image': 'assets/parking6.png'
+      },
     ];
 
     return DefaultTabController(
       length: 2,
-      child: SafeArea(
-        child: Column(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: const Text(
+            'ParkEase',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings, color: Colors.black),
+              onPressed: () {},
+            ),
+          ],
+        ),
+        body: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 20, bottom: 10),
-              child: Text("ParkEase", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: const Text(
+                'My Bookings',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
             ),
-            const TabBar(
-              labelColor: Colors.teal,
-              unselectedLabelColor: Colors.grey,
-              tabs: [Tab(text: 'Upcoming'), Tab(text: 'Past')],
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TabBar(
+                labelColor: Colors.blue[600],
+                unselectedLabelColor: Colors.grey[600],
+                indicatorColor: Colors.blue[600],
+                indicatorWeight: 2,
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+                dividerColor: Colors.transparent,
+                tabs: const [
+                  Tab(text: 'Upcoming'),
+                  Tab(text: 'Past'),
+                ],
+              ),
             ),
+            const SizedBox(height: 10),
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildBookingList(activeBookings),
-                  _buildBookingList(pastBookings),
+                  _buildBookingList(upcomingBookings, true),
+                  _buildBookingList(pastBookings, false),
                 ],
               ),
             ),
           ],
         ),
+
       ),
     );
   }
 
-  Widget _buildBookingList(List<Map<String, String>> bookings) {
+
+
+  Widget _buildBookingList(List<Map<String, String>> bookings, bool isUpcoming) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       itemCount: bookings.length,
       itemBuilder: (context, index) {
-        final spot = bookings[index];
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(vertical: 8),
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.asset(spot['image']!, width: 50, height: 50, fit: BoxFit.cover),
+        final booking = bookings[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          title: Text(spot['time']!, style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(spot['address']!, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-          trailing: Text(
-            spot['status']!,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: spot['status'] == 'Active' ? Colors.teal : Colors.grey,
-            ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image placeholder
+              Container(
+                width: 80,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.local_parking,
+                  color: Colors.grey[400],
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      booking['time']!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      booking['location']!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: booking['status'] == 'Active'
+                                ? Colors.green[50]
+                                : Colors.grey[50],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            booking['status']!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: booking['status'] == 'Active'
+                                  ? Colors.green[700]
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
+                          child: Text(
+                            isUpcoming ? 'View →' : 'View Details',
+                            style: TextStyle(
+                              color: Colors.blue[600],
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
