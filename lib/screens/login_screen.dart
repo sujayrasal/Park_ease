@@ -45,6 +45,189 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showForgotPasswordDialog() {
+    final TextEditingController emailResetController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Password'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter your email address to receive a password reset link.'),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: emailResetController,
+              decoration: InputDecoration(
+                hintText: 'Email',
+                hintStyle: TextStyle(color: Colors.grey[500]),
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final email = emailResetController.text.trim();
+              if (email.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter your email address')),
+                );
+                return;
+              }
+
+              Navigator.pop(context); // Close dialog first
+
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(child: CircularProgressIndicator()),
+              );
+
+              try {
+                // Add timeout to prevent infinite loading
+                await FirebaseAuth.instance.sendPasswordResetEmail(
+                  email: email,
+                ).timeout(
+                  const Duration(seconds: 10),
+                  onTimeout: () {
+                    throw Exception('Request timed out. Please check your internet connection.');
+                  },
+                );
+
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context); // Close loading dialog
+                }
+
+                // Show success dialog
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green, size: 28),
+                        SizedBox(width: 10),
+                        Text('Email Sent!'),
+                      ],
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Password reset email has been sent to:'),
+                        SizedBox(height: 8),
+                        Text(
+                          email,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2196F3),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Text('Please check your inbox and spam folder.'),
+                        SizedBox(height: 8),
+                        Text(
+                          'Click the link in the email to reset your password.',
+                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF2196F3),
+                        ),
+                        child: Text('OK', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                );
+
+                // Also show snackbar for additional confirmation
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.email, color: Colors.white),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('Reset email sent successfully!')),
+                      ],
+                    ),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              } on FirebaseAuthException catch (e) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context); // Close loading dialog
+                }
+
+                String errorMessage;
+                switch (e.code) {
+                  case 'user-not-found':
+                    errorMessage = 'No user found with this email address.';
+                    break;
+                  case 'invalid-email':
+                    errorMessage = 'Invalid email address.';
+                    break;
+                  case 'too-many-requests':
+                    errorMessage = 'Too many requests. Please try again later.';
+                    break;
+                  case 'network-request-failed':
+                    errorMessage = 'Network error. Please check your internet connection.';
+                    break;
+                  default:
+                    errorMessage = 'Error: ${e.code} - ${e.message ?? "Please try again."}';
+                }
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(errorMessage),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+              } catch (e) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context); // Close loading dialog
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2196F3),
+            ),
+            child: const Text('Send Reset Email', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,7 +364,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment.center,
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: _showForgotPasswordDialog,
                           child: Text(
                             'Forgot Password?',
                             style: TextStyle(

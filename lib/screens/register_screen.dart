@@ -36,9 +36,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
         final uid = userCredential.user!.uid;
 
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'createdAt': FieldValue.serverTimestamp(),
           'name': _nameController.text.trim(),
           'email': _emailController.text.trim(),
           'phone': _phoneController.text.trim(),
+          'uid': uid, // <-- Store user id here
         });
 
         Navigator.pop(context);
