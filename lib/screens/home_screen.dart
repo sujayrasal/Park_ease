@@ -96,14 +96,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          _buildHomeView(),
-          _buildBookingView(),
-          _buildAccountView(),
-        ],
+      // Remove backgroundColor from Scaffold, use a gradient container instead
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF00BCD4), // Cyan
+              Color(0xFF2196F3), // Blue
+              Color(0xFF9C27B0), // Purple
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: IndexedStack(
+            index: _currentIndex,
+            children: [
+              _buildHomeView(),
+              _buildBookingView(),
+              _buildAccountView(),
+            ],
+          ),
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -111,46 +126,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _currentIndex = index;
           _showParkingSpots = false;
         }),
-        selectedItemColor: Colors.teal,
+        selectedItemColor: const Color(0xFF2196F3), // Match login/splash blue
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Reservations'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHomeView() {
-    return SafeArea(
-      child: Column(
-        children: [
-          _buildHeader(),
-          // --- India Map Placeholder below search ---
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Container(
-              height: 240, // Increased height for a bigger image placeholder
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.teal.withOpacity(0.2)),
-              ),
-              // Uncommented image section:
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
-                  'assets/india_map.png', // Replace with your actual image asset path
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          // --- End India Map Placeholder ---
-          _buildParkingList(),
         ],
       ),
     );
@@ -164,15 +146,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           const Text(
             "ParkEase",
             style: TextStyle(
-              fontSize: 28, // Make this 28 for consistency
-              fontWeight: FontWeight.bold, // Use bold for all
-              color: Colors.black,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white, // White for contrast on gradient
             ),
           ),
           const SizedBox(height: 20),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
             ),
             child: TextField(
@@ -187,6 +169,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHomeView() {
+    return Column(
+      children: [
+        _buildHeader(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Container(
+            height: 240,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/india_map.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
+            ),
+            child: _buildParkingList(), // This is correct now!
+          ),
+        ),
+      ],
     );
   }
 
@@ -238,24 +259,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildParkingList() {
-    return Expanded(
-      flex: 2,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
-            child: Text('Parking Options', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
+          child: Text('Parking Options', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: _parkingData.length,
+            itemBuilder: (context, index) => _buildParkingCard(_parkingData[index]),
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _parkingData.length,
-              itemBuilder: (context, index) => _buildParkingCard(_parkingData[index]),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

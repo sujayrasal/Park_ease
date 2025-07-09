@@ -128,7 +128,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
                     elevation: 2,
                   ),
                   child: const Text(
-                    "Submit for Approval",
+                    "Submit", // Changed from "Submit for Approval" to "Submit"
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -322,7 +322,6 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
           'evCharging': _hasEVCharging,
           'wheelchairAccessible': _hasWheelchairAccess,
         },
-        'status': 'pending', // For approval workflow
       });
       
       _showSnackBar('Parking spot submitted for approval!', const Color(0xFF4A90E2));

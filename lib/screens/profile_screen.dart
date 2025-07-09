@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_profile_screen.dart';
 import 'list_parking_screen.dart';
+import 'my_vehicles_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -202,7 +203,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildMenuItem(
                     icon: Icons.directions_car_outlined,
                     title: 'My Vehicles',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MyVehiclesScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.payment_outlined,
@@ -360,7 +368,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Text(data['description'] ?? '',
                                     style: const TextStyle(color: Colors.grey)),
                                 const SizedBox(height: 6),
-                                Text("₹${data['price']}/hr",
+                                Text("₹${data['pricePerHour']}/hr",
                                     style: const TextStyle(color: Colors.black)), // Black price
                                 const SizedBox(height: 4),
                                 Row(
