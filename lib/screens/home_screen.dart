@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'profile_screen.dart';
 import 'reservation_screen.dart';
 import 'booking_confirmed_screen.dart';
@@ -95,16 +96,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      // Remove backgroundColor from Scaffold, use a gradient container instead
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF00BCD4), // Cyan
-              Color(0xFF2196F3), // Blue
-              Color(0xFF9C27B0), // Purple
-            ],
+            colors: isDarkMode
+                ? [Colors.grey[900]!, Colors.grey[850]!, Colors.black]
+                : [Color(0xFF00BCD4), Color(0xFF2196F3), Color(0xFF9C27B0)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -113,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: IndexedStack(
             index: _currentIndex,
             children: [
-              _buildHomeView(),
+              _buildHomeView(context, theme, isDarkMode),
               _buildBookingView(),
               _buildAccountView(),
             ],
@@ -126,9 +127,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _currentIndex = index;
           _showParkingSpots = false;
         }),
-        selectedItemColor: const Color(0xFF2196F3), // Match login/splash blue
+        selectedItemColor: theme.colorScheme.primary,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
+        backgroundColor: theme.scaffoldBackgroundColor,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Reservations'),
@@ -138,53 +140,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          const Text(
-            "ParkEase",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white, // White for contrast on gradient
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: TextField(
-              controller: _controllers['search'],
-              decoration: const InputDecoration(
-                hintText: 'Search for parking',
-                prefixIcon: Icon(Icons.search, color: Colors.grey),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHomeView() {
+  // Update _buildHomeView to accept theme and isDarkMode
+  Widget _buildHomeView(BuildContext context, ThemeData theme, bool isDarkMode) {
     return Column(
       children: [
-        _buildHeader(),
+        _buildHeader(theme, isDarkMode),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Container(
             height: 240,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: theme.cardColor.withOpacity(0.2)),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
@@ -197,87 +166,77 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         Expanded(
           child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(30),
                 topRight: Radius.circular(30),
               ),
             ),
-            child: _buildParkingList(), // This is correct now!
+            child: _buildParkingList(theme, isDarkMode),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMapSection() {
-    return Expanded(
-      flex: 2,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(
-            colors: [Color(0xFF4A9B8E), Color(0xFF6BB6AA)],
-          ),
-        ),
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: CustomPaint(painter: IndiaMapPainter()),
+  // Update _buildHeader
+  Widget _buildHeader(ThemeData theme, bool isDarkMode) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Text(
+            "ParkEase",
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onBackground,
             ),
-            Positioned(
-              right: 16,
-              top: 16,
-              child: Column(
-                children: [
-                  _buildZoomButton(Icons.add),
-                  const SizedBox(height: 8),
-                  _buildZoomButton(Icons.remove),
-                ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TextField(
+              controller: _controllers['search'],
+              decoration: InputDecoration(
+                hintText: 'Search for parking',
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildZoomButton(IconData icon) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
-      ),
-      child: Icon(icon, color: Colors.black),
-    );
-  }
-
-  Widget _buildParkingList() {
+  // Update _buildParkingList
+  Widget _buildParkingList(ThemeData theme, bool isDarkMode) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
-          child: Text('Parking Options', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          child: Text('Parking Options', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground)),
         ),
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: _parkingData.length,
-            itemBuilder: (context, index) => _buildParkingCard(_parkingData[index]),
+            itemBuilder: (context, index) => _buildParkingCard(_parkingData[index], theme, isDarkMode),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildParkingCard(Map<String, String> spot) {
+  // Update _buildParkingCard
+  Widget _buildParkingCard(Map<String, String> spot, ThemeData theme, bool isDarkMode) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       child: Row(
@@ -287,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             height: 80,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Colors.grey[200],
+              color: theme.cardColor,
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -306,10 +265,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(spot['name']!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(spot['name']!, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground)),
                 const SizedBox(height: 4),
-                Text(spot['distance']!, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-                Text(spot['address']!, style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                Text(spot['distance']!, style: TextStyle(fontSize: 14, color: theme.colorScheme.onBackground.withOpacity(0.7))),
+                Text(spot['address']!, style: TextStyle(fontSize: 13, color: theme.colorScheme.onBackground.withOpacity(0.5)),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
@@ -319,15 +278,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.teal, // Changed to teal
+                color: theme.colorScheme.primary,
                 borderRadius: BorderRadius.circular(25),
               ),
-              child: const Text(
+              child: Text(
                 'View',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white, // White text for contrast
+                  color: theme.colorScheme.onPrimary,
                 ),
               ),
             ),
@@ -342,8 +301,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildAccountView() {
-    return const ProfileScreen();
-  }
+  final themeProvider = Provider.of<ThemeProvider>(context, listen: true);
+  return ProfileScreen(themeProvider: themeProvider);
+}
 
   List<Widget> _buildProfileCards() {
     final cards = [
@@ -590,6 +550,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // Replace your existing _showDetailedBookingDialog with this enhanced version
   void _showDetailedBookingDialog(BuildContext context, Map<String, dynamic> spot) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     DateTime selectedDate = DateTime.now();
     TimeOfDay selectedStartTime = TimeOfDay.now();
     TimeOfDay selectedEndTime = TimeOfDay(hour: TimeOfDay.now().hour + 2, minute: TimeOfDay.now().minute);
@@ -608,9 +571,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           maxChildSize: 0.95,
           minChildSize: 0.5,
           builder: (context, scrollController) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: SingleChildScrollView(
               controller: scrollController,
@@ -624,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
+                        color: theme.dividerColor,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -634,12 +597,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back),
+                        icon: Icon(Icons.arrow_back, color: theme.colorScheme.onBackground),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const Text(
+                      Text(
                         'Parking Spot Details',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground),
                       ),
                     ],
                   ),
@@ -650,7 +613,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: Colors.grey[200],
+                      color: theme.cardColor,
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
@@ -658,44 +621,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         spot['image']!,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.local_parking, color: Colors.grey, size: 60),
+                          color: theme.cardColor,
+                          child: Icon(Icons.local_parking, color: theme.colorScheme.onBackground, size: 60),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
                   // Basic Info Section
-                  const Text(
+                  Text(
                     'Basic Info',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onBackground),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     spot['name']!,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     spot['address']!,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onBackground.withOpacity(0.7)),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     spot['distance']!,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onBackground.withOpacity(0.7)),
                   ),
                   const SizedBox(height: 24),
                   // Enhanced Details Section
-                  const Text(
+                  Text(
                     'Enhanced Details',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onBackground),
                   ),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -984,25 +947,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Get Directions
+                  // Get Directions Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        _showSnackBar('Directions to ${spot['name']} not implemented yet.', Colors.blue);
+                        _showSnackBar('Directions to ${spot['name']} not implemented yet.', theme.colorScheme.primary);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      label: const Text('Get Directions', style: TextStyle(color: Colors.white)),
-                      icon: const Icon(Icons.directions, color: Colors.white),
+                      label: Text('Get Directions', style: TextStyle(color: theme.colorScheme.onPrimary)),
+                      icon: Icon(Icons.directions, color: theme.colorScheme.onPrimary),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Book Slot Button (Updated)
+                  const SizedBox(height: 16), // <-- Add more space between buttons
+                  // Book Slot Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

@@ -1,12 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'edit_profile_screen.dart';
 import 'list_parking_screen.dart';
 import 'my_vehicles_screen.dart';
 
+// Theme Provider Class
+class ThemeProvider extends ChangeNotifier {
+  bool _isDarkMode = false;
+  
+  bool get isDarkMode => _isDarkMode;
+  
+  ThemeProvider() {
+    _loadTheme();
+  }
+  
+  void toggleTheme() {
+    _isDarkMode = !_isDarkMode;
+    _saveTheme();
+    notifyListeners();
+  }
+  
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isDarkMode = prefs.getBool('isDarkMode') ?? false;
+    notifyListeners();
+  }
+  
+  Future<void> _saveTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkMode', _isDarkMode);
+  }
+}
+
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final ThemeProvider themeProvider;
+  
+  const ProfileScreen({super.key, required this.themeProvider});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -31,9 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        // Set email from Firebase Auth
         userEmail = user.email;
-        // Load additional data from Firestore
         final doc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -42,15 +71,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           setState(() {
             if (doc.exists) {
               final data = doc.data() as Map<String, dynamic>;
-              userName = data['name'] ?? 'Guest';
+              userName = data['name'] ?? user.email ?? 'User';
               userPhone = data['phone'];
             } else {
-              userName = 'Guest';
+              userName = user.email ?? 'User';
             }
           });
         }
       } catch (e) {
-        if (mounted) setState(() => userName = 'Guest');
+        if (mounted) setState(() => userName = user.email ?? 'User');
       }
     } else {
       setState(() => userName = 'Guest');
@@ -98,22 +127,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = widget.themeProvider.isDarkMode;
+    
     if (_showParkingSpots) return _buildParkingSpotsView();
+    
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text(
+        title: Text(
           'ParkEase',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.black, // Black for consistency
+            color: isDarkMode ? Colors.white : Colors.black,
           ),
         ),
         centerTitle: true,
+        actions: [
+          // Theme Toggle Button
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: GestureDetector(
+              onTap: widget.themeProvider.toggleTheme,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(
+                  isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
+                  color: isDarkMode ? Colors.yellow : Colors.grey[700],
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -125,11 +178,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.teal, width: 2), // Teal border
+                border: Border.all(
+                  color: isDarkMode ? Colors.tealAccent : Colors.teal, 
+                  width: 2
+                ),
               ),
               child: CircleAvatar(
                 radius: 48,
-                backgroundColor: Colors.teal, // Teal avatar background
+                backgroundColor: isDarkMode ? Colors.tealAccent : Colors.teal,
                 child: const Icon(
                   Icons.person,
                   size: 50,
@@ -140,10 +196,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             Text(
               userName ?? "Guest",
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
             ),
             const SizedBox(height: 4),
@@ -151,35 +207,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (userEmail != null)
               Text(
                 userEmail!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey,
                 ),
               ),
             // Display phone if available
             if (userPhone != null && userPhone!.isNotEmpty)
               Text(
                 userPhone!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey,
                 ),
               ),
             if (userEmail == null && (userPhone == null || userPhone!.isEmpty))
-              const Text(
+              Text(
                 "Joined in 2021",
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey,
                 ),
               ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: _navigateToEditProfile, // Updated this line
-              child: const Text(
+              onPressed: _navigateToEditProfile,
+              child: Text(
                 "Edit Profile",
                 style: TextStyle(
-                  color: Colors.teal, // Changed to teal
+                  color: isDarkMode ? Colors.tealAccent : Colors.teal,
                   fontSize: 14,
                 ),
               ),
@@ -193,12 +249,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildMenuItem(
                     icon: Icons.add_location_alt_outlined,
                     title: 'List Your Parking',
-                    onTap: _navigateToListParking, // Updated this line
+                    onTap: _navigateToListParking,
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.local_parking_outlined,
                     title: 'My Parking Spots',
                     onTap: () => setState(() => _showParkingSpots = true),
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.directions_car_outlined,
@@ -211,51 +269,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                     },
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.payment_outlined,
                     title: 'Payment Methods',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.account_balance_wallet_outlined,
                     title: 'Wallet & Credits',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.headset_mic_outlined,
                     title: 'Support',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.settings_outlined,
                     title: 'Settings',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.privacy_tip_outlined,
                     title: 'Privacy Policy',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.description_outlined,
                     title: 'Terms of Service',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.star_outline,
                     title: 'Rate the App',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   _buildMenuItem(
                     icon: Icons.help_outline,
                     title: 'Help & FAQ',
                     onTap: () {},
+                    isDarkMode: isDarkMode,
                   ),
                   const SizedBox(height: 32),
                   // Logout Button
@@ -268,13 +336,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.pushReplacementNamed(context, '/login');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal, // Changed to teal
-                        foregroundColor: Colors.white, // White text
+                        backgroundColor: isDarkMode ? Colors.tealAccent : Colors.teal,
+                        foregroundColor: isDarkMode ? Colors.black : Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
-                          side: const BorderSide(color: Colors.teal), // Teal border
+                          side: BorderSide(
+                            color: isDarkMode ? Colors.tealAccent : Colors.teal
+                          ),
                         ),
                       ),
                       child: const Text(
@@ -300,6 +370,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    required bool isDarkMode,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
@@ -307,20 +378,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
         leading: Icon(
           icon,
-          color: Colors.black, // Black icon
+          color: isDarkMode ? Colors.white : Colors.black,
           size: 24,
         ),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: Colors.black,
+            color: isDarkMode ? Colors.white : Colors.black,
           ),
         ),
         trailing: Icon(
           Icons.chevron_right,
-          color: Colors.grey[400],
+          color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
           size: 20,
         ),
         onTap: onTap,
@@ -329,70 +400,119 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildParkingSpotsView() {
+    final isDarkMode = widget.themeProvider.isDarkMode;
+    
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text("ParkEase", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black)),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black), // Black arrow
-                  onPressed: () => setState(() => _showParkingSpots = false),
-                ),
-                const SizedBox(width: 8),
-                const Text("Locations", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: _userParkingSpots.isEmpty
-                  ? const Center(child: Text("No parking spots added yet."))
-                  : ListView.builder(
-                      itemCount: _userParkingSpots.length,
-                      itemBuilder: (context, index) {
-                        final data = _userParkingSpots[index].data() as Map<String, dynamic>;
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(data['title'] ?? '',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 4),
-                                Text(data['description'] ?? '',
-                                    style: const TextStyle(color: Colors.grey)),
-                                const SizedBox(height: 6),
-                                Text("₹${data['pricePerHour']}/hr",
-                                    style: const TextStyle(color: Colors.black)), // Black price
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Icon(Icons.circle, size: 10,
-                                        color: (data['available'] == true) ? Colors.green : Colors.red),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      data['available'] == true ? 'Available' : 'Unavailable',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: (data['available'] == true) ? Colors.green : Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+      child: Container(
+        color: isDarkMode ? Colors.grey[900] : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text(
+                "ParkEase", 
+                style: TextStyle(
+                  fontSize: 28, 
+                  fontWeight: FontWeight.bold, 
+                  color: isDarkMode ? Colors.white : Colors.black
+                )
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back, 
+                      color: isDarkMode ? Colors.white : Colors.black
                     ),
-            ),
-          ],
+                    onPressed: () => setState(() => _showParkingSpots = false),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Locations", 
+                    style: TextStyle(
+                      fontSize: 20, 
+                      fontWeight: FontWeight.bold, 
+                      color: isDarkMode ? Colors.white : Colors.black
+                    )
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: _userParkingSpots.isEmpty
+                    ? Center(
+                        child: Text(
+                          "No parking spots added yet.",
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.grey[400] : Colors.black
+                          )
+                        )
+                      )
+                    : ListView.builder(
+                        itemCount: _userParkingSpots.length,
+                        itemBuilder: (context, index) {
+                          final data = _userParkingSpots[index].data() as Map<String, dynamic>;
+                          return Card(
+                            color: isDarkMode ? Colors.grey[800] : Colors.white,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    data['title'] ?? '',
+                                    style: TextStyle(
+                                      fontSize: 16, 
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode ? Colors.white : Colors.black
+                                    )
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    data['description'] ?? '',
+                                    style: TextStyle(
+                                      color: isDarkMode ? Colors.grey[400] : Colors.grey
+                                    )
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "₹${data['pricePerHour']}/hr",
+                                    style: TextStyle(
+                                      color: isDarkMode ? Colors.white : Colors.black
+                                    )
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.circle, 
+                                        size: 10,
+                                        color: (data['available'] == true) ? Colors.green : Colors.red
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        data['available'] == true ? 'Available' : 'Unavailable',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: (data['available'] == true) ? Colors.green : Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

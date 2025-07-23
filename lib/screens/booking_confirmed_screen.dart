@@ -11,24 +11,24 @@ class BookingConfirmedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dynamically get duration and total cost from bookingDetails
+    final theme = Theme.of(context);
     final duration = bookingDetails['duration'] ?? '2hr';
     final totalCost = bookingDetails['totalCost'] ?? '₹100';
     final time = bookingDetails['time'] ?? '2:00 PM - 4:00 PM ($duration)';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onBackground),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Reservation Confirmed',
           style: TextStyle(
-            color: Colors.black,
+            color: theme.colorScheme.onBackground,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -36,12 +36,12 @@ class BookingConfirmedScreen extends StatelessWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share, color: Colors.black),
+            icon: Icon(Icons.share, color: theme.colorScheme.primary),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Share functionality not implemented'),
-                  backgroundColor: Colors.teal,
+                SnackBar(
+                  content: const Text('Share functionality not implemented'),
+                  backgroundColor: theme.colorScheme.primary,
                 ),
               );
             },
@@ -58,12 +58,12 @@ class BookingConfirmedScreen extends StatelessWidget {
               children: [
                 Icon(Icons.check_circle, color: Colors.green[600], size: 24),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Reservation Confirmed',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.green,
+                    color: Colors.green[600],
                   ),
                 ),
               ],
@@ -75,7 +75,7 @@ class BookingConfirmedScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(30),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8B89A),
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -83,22 +83,22 @@ class BookingConfirmedScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: QrImageView(
                         data: 'PARKING_BOOKING_${bookingDetails['bookingId'] ?? 'PB001234'}',
                         version: QrVersions.auto,
                         size: 120,
-                        foregroundColor: Colors.black,
+                        foregroundColor: theme.colorScheme.onBackground,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Show this QR code at entrance',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.black87,
+                        color: theme.colorScheme.onBackground,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -109,12 +109,12 @@ class BookingConfirmedScreen extends StatelessWidget {
             const SizedBox(height: 40),
 
             // Reservation Details Section
-            const Text(
+            Text(
               'Reservation Details',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: theme.colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 20),
@@ -124,19 +124,19 @@ class BookingConfirmedScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                border: Border.all(color: theme.dividerColor),
               ),
               child: Column(
                 children: [
-                  _buildDetailRow('Booking ID', bookingDetails['bookingId'] ?? 'PB001234'),
+                  _buildDetailRow('Booking ID', bookingDetails['bookingId'] ?? 'PB001234', theme),
                   const SizedBox(height: 16),
-                  _buildDetailRow('Address', bookingDetails['address'] ?? '123 Elm Street, Anytown'),
+                  _buildDetailRow('Address', bookingDetails['address'] ?? '123 Elm Street, Anytown', theme),
                   const SizedBox(height: 16),
-                  _buildDetailRow('Level 2', bookingDetails['level'] ?? 'Underground'),
+                  _buildDetailRow('Level 2', bookingDetails['level'] ?? 'Underground', theme),
                   const SizedBox(height: 16),
-                  _buildDetailRow('Spot A-15', bookingDetails['spotNumber'] ?? 'Vehicle Plate: ABC 123, Sedan'),
+                  _buildDetailRow('Spot A-15', bookingDetails['spotNumber'] ?? 'Vehicle Plate: ABC 123, Sedan', theme),
                   const SizedBox(height: 20),
 
                   // Date & Time Section
@@ -146,29 +146,29 @@ class BookingConfirmedScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Date & Time',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: theme.colorScheme.onBackground.withOpacity(0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               bookingDetails['date'] ?? 'Today,',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                             Text(
                               time,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                           ],
@@ -178,21 +178,21 @@ class BookingConfirmedScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Total Cost',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: theme.colorScheme.onBackground.withOpacity(0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               totalCost,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                           ],
@@ -205,11 +205,11 @@ class BookingConfirmedScreen extends StatelessWidget {
                   // Booking Status
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Booking Status',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey,
+                          color: theme.colorScheme.onBackground.withOpacity(0.7),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -220,7 +220,7 @@ class BookingConfirmedScreen extends StatelessWidget {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Paid',
                           style: TextStyle(
                             fontSize: 12,
@@ -237,12 +237,12 @@ class BookingConfirmedScreen extends StatelessWidget {
             const SizedBox(height: 40),
 
             // Parking Instructions Section
-            const Text(
+            Text(
               'Parking Instructions',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: theme.colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 20),
@@ -250,33 +250,33 @@ class BookingConfirmedScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                border: Border.all(color: theme.dividerColor),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInstructionStep('1. Scan QR at entrance gate'),
+                  _buildInstructionStep('1. Scan QR at entrance gate', theme),
                   const SizedBox(height: 12),
-                  _buildInstructionStep('2. Proceed to Level 2, Zone A'),
+                  _buildInstructionStep('2. Proceed to Level 2, Zone A', theme),
                   const SizedBox(height: 12),
-                  _buildInstructionStep('3. Park in designated Spot A-15'),
+                  _buildInstructionStep('3. Park in designated Spot A-15', theme),
                   const SizedBox(height: 12),
-                  _buildInstructionStep('4. Keep booking confirmation handy'),
+                  _buildInstructionStep('4. Keep booking confirmation handy', theme),
                   const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.blue[50],
+                      color: theme.colorScheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[200]!),
+                      border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Overstay pricing: ₹30 per additional hour',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blue,
+                        color: theme.colorScheme.primary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -287,12 +287,12 @@ class BookingConfirmedScreen extends StatelessWidget {
             const SizedBox(height: 40),
 
             // Contact Information Section
-            const Text(
+            Text(
               'Contact Information',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: theme.colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 20),
@@ -300,9 +300,9 @@ class BookingConfirmedScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                border: Border.all(color: theme.dividerColor),
               ),
               child: Column(
                 children: [
@@ -312,28 +312,28 @@ class BookingConfirmedScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Customer',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: theme.colorScheme.onBackground.withOpacity(0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               bookingDetails['customerName'] ?? 'John Doe',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                             Text(
                               bookingDetails['customerPhone'] ?? '24/7 Help',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                           ],
@@ -343,21 +343,21 @@ class BookingConfirmedScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Property Contact',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: theme.colorScheme.onBackground.withOpacity(0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
+                            Text(
                               '555-1234',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                           ],
@@ -372,28 +372,28 @@ class BookingConfirmedScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Support',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: theme.colorScheme.onBackground.withOpacity(0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
+                            Text(
                               '+1800',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
-                            const Text(
+                            Text(
                               'PARKEASE',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                           ],
@@ -403,35 +403,35 @@ class BookingConfirmedScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Email',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: theme.colorScheme.onBackground.withOpacity(0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
+                            Text(
                               'help@',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
-                            const Text(
+                            Text(
                               'parkease.via',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
-                            const Text(
+                            Text(
                               'app',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                           ],
@@ -449,9 +449,9 @@ class BookingConfirmedScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+                border: Border.all(color: theme.dividerColor),
               ),
               child: Column(
                 children: [
@@ -460,23 +460,24 @@ class BookingConfirmedScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Opening directions...'),
-                            backgroundColor: Colors.blue,
+                          SnackBar(
+                            content: const Text('Opening directions...'),
+                            backgroundColor: theme.colorScheme.primary,
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Get Directions',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: theme.colorScheme.onPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -488,23 +489,23 @@ class BookingConfirmedScreen extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Adding to calendar...'),
-                            backgroundColor: Colors.teal,
+                          SnackBar(
+                            content: const Text('Adding to calendar...'),
+                            backgroundColor: theme.colorScheme.primary,
                           ),
                         );
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Colors.grey),
+                        side: BorderSide(color: theme.dividerColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Add to Calendar',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: theme.colorScheme.onBackground,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -516,23 +517,23 @@ class BookingConfirmedScreen extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Downloading receipt...'),
-                            backgroundColor: Colors.teal,
+                          SnackBar(
+                            content: const Text('Downloading receipt...'),
+                            backgroundColor: theme.colorScheme.primary,
                           ),
                         );
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Colors.grey),
+                        side: BorderSide(color: theme.dividerColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Download Receipt',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: theme.colorScheme.onBackground,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -544,23 +545,23 @@ class BookingConfirmedScreen extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Opening modify booking...'),
-                            backgroundColor: Colors.teal,
+                          SnackBar(
+                            content: const Text('Opening modify booking...'),
+                            backgroundColor: theme.colorScheme.primary,
                           ),
                         );
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Colors.grey),
+                        side: BorderSide(color: theme.dividerColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Modify Booking',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: theme.colorScheme.onBackground,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -606,12 +607,12 @@ class BookingConfirmedScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Reminder Settings',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black,
+                          color: theme.colorScheme.onBackground,
                         ),
                       ),
                       Switch(
@@ -620,11 +621,11 @@ class BookingConfirmedScreen extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(value ? 'Reminders enabled' : 'Reminders disabled'),
-                              backgroundColor: Colors.teal,
+                              backgroundColor: theme.colorScheme.primary,
                             ),
                           );
                         },
-                        activeColor: Colors.teal,
+                        activeColor: theme.colorScheme.primary,
                       ),
                     ],
                   ),
@@ -634,21 +635,21 @@ class BookingConfirmedScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Share Booking Details',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black,
+                          color: theme.colorScheme.onBackground,
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.share, color: Colors.teal),
+                        icon: Icon(Icons.share, color: theme.colorScheme.primary),
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Sharing booking details...'),
-                              backgroundColor: Colors.teal,
+                            SnackBar(
+                              content: const Text('Sharing booking details...'),
+                              backgroundColor: theme.colorScheme.primary,
                             ),
                           );
                         },
@@ -661,21 +662,21 @@ class BookingConfirmedScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'View on Map',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black,
+                          color: theme.colorScheme.onBackground,
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.map, color: Colors.teal),
+                        icon: Icon(Icons.map, color: theme.colorScheme.primary),
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Opening map view...'),
-                              backgroundColor: Colors.teal,
+                            SnackBar(
+                              content: const Text('Opening map view...'),
+                              backgroundColor: theme.colorScheme.primary,
                             ),
                           );
                         },
@@ -688,14 +689,14 @@ class BookingConfirmedScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
+                    child: Text(
                       '15 minutes late arrival allowed',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey,
+                        color: theme.colorScheme.onBackground.withOpacity(0.7),
                         fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
@@ -711,7 +712,7 @@ class BookingConfirmedScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value, ThemeData theme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -719,9 +720,9 @@ class BookingConfirmedScreen extends StatelessWidget {
           width: 80,
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.grey,
+              color: theme.colorScheme.onBackground.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -730,10 +731,10 @@ class BookingConfirmedScreen extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.black,
+              color: theme.colorScheme.onBackground,
             ),
           ),
         ),
@@ -741,7 +742,7 @@ class BookingConfirmedScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInstructionStep(String instruction) {
+  Widget _buildInstructionStep(String instruction, ThemeData theme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -749,8 +750,8 @@ class BookingConfirmedScreen extends StatelessWidget {
           width: 6,
           height: 6,
           margin: const EdgeInsets.only(top: 6),
-          decoration: const BoxDecoration(
-            color: Colors.teal,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
             shape: BoxShape.circle,
           ),
         ),
@@ -758,9 +759,9 @@ class BookingConfirmedScreen extends StatelessWidget {
         Expanded(
           child: Text(
             instruction,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Colors.black87,
+              color: theme.colorScheme.onBackground,
               fontWeight: FontWeight.w500,
             ),
           ),

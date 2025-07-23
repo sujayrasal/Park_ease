@@ -5,6 +5,9 @@ class ReservationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     final upcomingBookings = [
       {
         'location': 'Connaught Place, New Delhi',
@@ -50,16 +53,16 @@ class ReservationScreen extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.scaffoldBackgroundColor,
           elevation: 0,
-          title: const Text(
+          title: Text(
             'ParkEase',
             style: TextStyle(
-              color: Colors.black,
-              fontSize: 28, // Make this 28 for consistency
-              fontWeight: FontWeight.bold, // Use bold for all
+              color: theme.colorScheme.onBackground,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
             ),
           ),
           centerTitle: true,
@@ -68,25 +71,25 @@ class ReservationScreen extends StatelessWidget {
           children: [
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: const Text(
+              child: Text(
                 'My Bookings',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: theme.colorScheme.onBackground,
                 ),
               ),
             ),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TabBar(
-                labelColor: Colors.blue[600],
-                unselectedLabelColor: Colors.grey[600],
-                indicatorColor: Colors.blue[600],
+                labelColor: theme.colorScheme.primary,
+                unselectedLabelColor: theme.colorScheme.onBackground.withOpacity(0.6),
+                indicatorColor: theme.colorScheme.primary,
                 indicatorWeight: 2,
                 labelStyle: const TextStyle(
                   fontWeight: FontWeight.w600,
@@ -107,21 +110,18 @@ class ReservationScreen extends StatelessWidget {
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildBookingList(upcomingBookings, true),
-                  _buildBookingList(pastBookings, false),
+                  _buildBookingList(upcomingBookings, true, theme, isDarkMode),
+                  _buildBookingList(pastBookings, false, theme, isDarkMode),
                 ],
               ),
             ),
           ],
         ),
-
       ),
     );
   }
 
-
-
-  Widget _buildBookingList(List<Map<String, String>> bookings, bool isUpcoming) {
+  Widget _buildBookingList(List<Map<String, String>> bookings, bool isUpcoming, ThemeData theme, bool isDarkMode) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       itemCount: bookings.length,
@@ -131,11 +131,11 @@ class ReservationScreen extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: isDarkMode ? Colors.black12 : Colors.grey.withOpacity(0.1),
                 spreadRadius: 1,
                 blurRadius: 8,
                 offset: const Offset(0, 2),
@@ -150,12 +150,12 @@ class ReservationScreen extends StatelessWidget {
                 width: 80,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.local_parking,
-                  color: Colors.grey[400],
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[400],
                   size: 32,
                 ),
               ),
@@ -167,10 +167,10 @@ class ReservationScreen extends StatelessWidget {
                   children: [
                     Text(
                       booking['time']!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: theme.colorScheme.onBackground,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -178,7 +178,7 @@ class ReservationScreen extends StatelessWidget {
                       booking['location']!,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[600],
+                        color: theme.colorScheme.onBackground.withOpacity(0.7),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -193,8 +193,8 @@ class ReservationScreen extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: booking['status'] == 'Active'
-                                ? Colors.green[50]
-                                : Colors.grey[50],
+                                ? Colors.green[100]
+                                : theme.cardColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -203,13 +203,15 @@ class ReservationScreen extends StatelessWidget {
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: booking['status'] == 'Active'
-                                  ? Colors.green[700]
-                                  : Colors.grey[600],
+                                  ? Colors.green
+                                  : theme.colorScheme.onBackground.withOpacity(0.7),
                             ),
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            _showBookingDetails(context, booking, theme, isDarkMode);
+                          },
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -219,7 +221,7 @@ class ReservationScreen extends StatelessWidget {
                           child: Text(
                             isUpcoming ? 'View →' : 'View Details',
                             style: TextStyle(
-                              color: Colors.blue[600],
+                              color: theme.colorScheme.primary,
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
                             ),
@@ -228,6 +230,69 @@ class ReservationScreen extends StatelessWidget {
                       ],
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showBookingDetails(BuildContext context, Map<String, String> booking, ThemeData theme, bool isDarkMode) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: theme.cardColor,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                booking['location'] ?? '',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onBackground,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                booking['time'] ?? '',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: theme.colorScheme.onBackground.withOpacity(0.8),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Status: ${booking['status'] ?? ''}',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: booking['status'] == 'Active'
+                      ? Colors.green
+                      : theme.colorScheme.onBackground.withOpacity(0.7),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Close'),
                 ),
               ),
             ],

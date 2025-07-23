@@ -9,7 +9,7 @@ class Vehicle {
   final int year;
   final String licensePlate;
   final String color;
-  final String type;
+  final String vehicleType; // <-- renamed from 'type'
   final String userId;
 
   Vehicle({
@@ -19,7 +19,7 @@ class Vehicle {
     required this.year,
     required this.licensePlate,
     required this.color,
-    required this.type,
+    required this.vehicleType,
     required this.userId,
   });
 
@@ -30,7 +30,7 @@ class Vehicle {
       'year': year,
       'licensePlate': licensePlate,
       'color': color,
-      'type': type,
+      'vehicleType': vehicleType, // <-- renamed here
       'userId': userId,
       'createdAt': FieldValue.serverTimestamp(),
     };
@@ -45,7 +45,7 @@ class Vehicle {
       year: data['year'] ?? 0,
       licensePlate: data['licensePlate'] ?? '',
       color: data['color'] ?? '',
-      type: data['type'] ?? '',
+      vehicleType: data['vehicleType'] ?? '', // <-- renamed here
       userId: data['userId'] ?? '',
     );
   }
@@ -107,7 +107,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
       return Scaffold(
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
-          backgroundColor: Colors.teal,
+          backgroundColor: const Color(0xFF00BCD4), // Cyan
           title: Text(
             'My Vehicles',
             style: TextStyle(
@@ -123,7 +123,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
         ),
         body: Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00BCD4)), // Cyan
           ),
         ),
       );
@@ -133,7 +133,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
       return Scaffold(
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
-          backgroundColor: Colors.teal,
+          backgroundColor: const Color(0xFF00BCD4), // Cyan
           title: Text(
             'My Vehicles',
             style: TextStyle(
@@ -156,7 +156,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        backgroundColor: const Color(0xFF00BCD4), // Cyan
         title: Text(
           'My Vehicles',
           style: TextStyle(
@@ -180,7 +180,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
               child: ElevatedButton(
                 onPressed: () => _showAddVehicleDialog(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
+                  backgroundColor: const Color(0xFF00BCD4), // Cyan
                   padding: EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -208,7 +208,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: _firestore
-                    .collection('user vehicles')
+                    .collection('uservehicles')
                     .where('userId', isEqualTo: _auth.currentUser!.uid)
                     .snapshots(),
                 builder: (context, snapshot) {
@@ -247,7 +247,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00BCD4)), // Cyan
                       ),
                     );
                   }
@@ -332,7 +332,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.teal,
+              color: const Color(0xFF00BCD4), // Cyan
               borderRadius: BorderRadius.circular(24),
             ),
             child: Icon(
@@ -357,7 +357,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  vehicle.type,
+                  vehicle.vehicleType,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -464,7 +464,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
 
   Future<void> _addVehicle(Vehicle vehicle) async {
     try {
-      await _firestore.collection('user vehicles').add(vehicle.toMap());
+      await _firestore.collection('uservehicles').add(vehicle.toMap());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Vehicle added successfully'),
@@ -484,7 +484,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
   Future<void> _updateVehicle(Vehicle vehicle) async {
     try {
       await _firestore
-          .collection('user vehicles')
+          .collection('uservehicles')
           .doc(vehicle.id)
           .update(vehicle.toMap());
       ScaffoldMessenger.of(context).showSnackBar(
@@ -520,7 +520,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                 Navigator.pop(context);
                 try {
                   await _firestore
-                      .collection('user vehicles')
+                      .collection('uservehicles')
                       .doc(vehicleId)
                       .delete();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -565,7 +565,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
   late TextEditingController _yearController;
   late TextEditingController _licensePlateController;
   String _selectedColor = '';
-  String _selectedType = '';
+  String _selectedVehicleType = '';
   bool _isLoading = false;
 
   final List<String> _colors = [
@@ -573,7 +573,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
   ];
 
   final List<String> _vehicleTypes = [
-    'Sedan', 'Hatchback', 'SUV', 'Truck', 'Motorcycle', 'Van'
+    'Sedan', 'Hatchback', 'SUV', 'Truck', 'Motorcycle', 'Van', 'Scooter', 'Bicycle'
   ];
 
   @override
@@ -584,7 +584,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
     _yearController = TextEditingController(text: widget.vehicle?.year.toString() ?? '');
     _licensePlateController = TextEditingController(text: widget.vehicle?.licensePlate ?? '');
     _selectedColor = widget.vehicle?.color ?? '';
-    _selectedType = widget.vehicle?.type ?? '';
+    _selectedVehicleType = widget.vehicle?.vehicleType ?? '';
   }
 
   @override
@@ -601,7 +601,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Colors.teal,
+        backgroundColor: const Color(0xFF00BCD4), // Cyan
         title: Text(
           widget.vehicle == null ? 'Add Vehicle' : 'Edit Vehicle',
           style: TextStyle(
@@ -640,9 +640,9 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
                         });
                       }),
                       SizedBox(height: 16),
-                      _buildDropdown('Vehicle Type', _selectedType, _vehicleTypes, (value) {
+                      _buildDropdown('Vehicle Type', _selectedVehicleType, _vehicleTypes, (value) {
                         setState(() {
-                          _selectedType = value!;
+                          _selectedVehicleType = value!;
                         });
                       }),
                     ],
@@ -669,7 +669,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _saveVehicle,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
+                        backgroundColor: const Color(0xFF00BCD4), // Cyan
                         padding: EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -706,9 +706,9 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
         Text(
           '$label *',
           style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
+            fontSize: 16, // Slightly larger
+            fontWeight: FontWeight.bold, // Make bolder
+            color: Colors.grey[800], // Darker for emphasis
           ),
         ),
         SizedBox(height: 8),
@@ -722,7 +722,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.teal),
+              borderSide: BorderSide(color: const Color(0xFF00BCD4)), // Cyan
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -750,9 +750,9 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
         Text(
           '$label *',
           style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
+            fontSize: 16, // Slightly larger
+            fontWeight: FontWeight.bold, // Make bolder
+            color: Colors.grey[800], // Darker for emphasis
           ),
         ),
         SizedBox(height: 8),
@@ -764,7 +764,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.teal),
+              borderSide: BorderSide(color: const Color(0xFF00BCD4)), // Cyan
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -799,7 +799,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
         year: int.parse(_yearController.text.trim()),
         licensePlate: _licensePlateController.text.trim().toUpperCase(),
         color: _selectedColor,
-        type: _selectedType,
+        vehicleType: _selectedVehicleType, // <-- use new field
         userId: _auth.currentUser!.uid,
       );
 

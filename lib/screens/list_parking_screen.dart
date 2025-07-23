@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class ListParkingScreen extends StatefulWidget {
   const ListParkingScreen({super.key});
@@ -18,6 +20,10 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
   String _pricePerHour = '';
   String _pricePerDay = '';
   bool _isAvailable = true;
+  bool _isGettingLocation = false;
+
+  // Text controller for address field
+  final TextEditingController _addressController = TextEditingController();
 
   // Amenities
   bool _hasCCTV = false;
@@ -27,14 +33,20 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
   bool _hasWheelchairAccess = false;
 
   @override
+  void dispose() {
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF00BCD4), // Cyan
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
@@ -42,7 +54,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: Colors.black,
+            color: Colors.white, // White text for contrast
           ),
         ),
         centerTitle: true,
@@ -57,8 +69,8 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
                 "Earn money from your parking space",
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF00BCD4), // Cyan accent
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 30),
@@ -66,7 +78,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
               // Location Details Section
               _buildSectionTitle('Location Details'),
               const SizedBox(height: 16),
-              _buildInputField('Address', 2, (val) => _address = val),
+              _buildAddressField(), // Updated address field with location button
               const SizedBox(height: 20),
 
               // Parking Information Section
@@ -103,7 +115,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
                   Checkbox(
                     value: _isAvailable,
                     onChanged: (value) => setState(() => _isAvailable = value ?? true),
-                    activeColor: Colors.teal,
+                    activeColor: const Color(0xFF00BCD4), // Cyan
                   ),
                   const Text(
                     'Available for booking',
@@ -119,7 +131,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
                 child: ElevatedButton(
                   onPressed: _submitParkingSpot,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
+                    backgroundColor: const Color(0xFF00BCD4), // Cyan
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -128,7 +140,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
                     elevation: 2,
                   ),
                   child: const Text(
-                    "Submit", // Changed from "Submit for Approval" to "Submit"
+                    "Submit",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -151,6 +163,77 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
         fontWeight: FontWeight.w600,
         color: Colors.black87,
       ),
+    );
+  }
+
+  Widget _buildAddressField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Address',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _addressController,
+          decoration: InputDecoration(
+            hintText: 'Enter Address',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF00BCD4), width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            suffixIcon: Container(
+              margin: const EdgeInsets.all(4),
+              child: ElevatedButton.icon(
+                onPressed: _isGettingLocation ? null : _getCurrentLocation,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00BCD4),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  elevation: 0,
+                  minimumSize: Size.zero,
+                ),
+                icon: _isGettingLocation
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.my_location, size: 16),
+                label: Text(
+                  _isGettingLocation ? 'Getting...' : 'Current',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+            ),
+          ),
+          maxLines: 2,
+          onChanged: (value) => _address = value,
+        ),
+      ],
     );
   }
 
@@ -181,7 +264,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF4A90E2), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF00BCD4), width: 2), // Cyan
             ),
             filled: true,
             fillColor: Colors.white,
@@ -238,7 +321,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
         Checkbox(
           value: value,
           onChanged: (val) => onChanged(val ?? false),
-          activeColor: Colors.teal,
+          activeColor: const Color(0xFF00BCD4), // Cyan
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         Expanded(
@@ -249,6 +332,95 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      _isGettingLocation = true;
+    });
+
+    try {
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showSnackBar('Location services are disabled. Please enable them.', Colors.red);
+        setState(() {
+          _isGettingLocation = false;
+        });
+        return;
+      }
+
+      // Check location permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          _showSnackBar('Location permissions are denied.', Colors.red);
+          setState(() {
+            _isGettingLocation = false;
+          });
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showSnackBar('Location permissions are permanently denied. Please enable them in settings.', Colors.red);
+        setState(() {
+          _isGettingLocation = false;
+        });
+        return;
+      }
+
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Get address from coordinates
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        String address = '';
+        
+        if (place.street != null && place.street!.isNotEmpty) {
+          address += place.street! + ', ';
+        }
+        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
+          address += place.subLocality! + ', ';
+        }
+        if (place.locality != null && place.locality!.isNotEmpty) {
+          address += place.locality! + ', ';
+        }
+        if (place.administrativeArea != null && place.administrativeArea!.isNotEmpty) {
+          address += place.administrativeArea! + ', ';
+        }
+        if (place.country != null && place.country!.isNotEmpty) {
+          address += place.country!;
+        }
+
+        // Remove trailing comma and space
+        address = address.replaceAll(RegExp(r', $'), '');
+
+        setState(() {
+          _address = address;
+          _addressController.text = address;
+        });
+
+        _showSnackBar('Location retrieved successfully!', const Color(0xFF4CAF50));
+      } else {
+        _showSnackBar('Could not get address for this location.', Colors.orange);
+      }
+    } catch (e) {
+      _showSnackBar('Error getting location: ${e.toString()}', Colors.red);
+    } finally {
+      setState(() {
+        _isGettingLocation = false;
+      });
+    }
   }
 
   void _clearFields() {
@@ -267,6 +439,7 @@ class _ListParkingScreenState extends State<ListParkingScreen> {
       _hasEVCharging = false;
       _hasWheelchairAccess = false;
     });
+    _addressController.clear();
   }
 
   Future<void> _submitParkingSpot() async {
