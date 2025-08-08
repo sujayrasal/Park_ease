@@ -103,27 +103,29 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: Colors.grey[50],
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF00BCD4), // Cyan
+          backgroundColor: theme.colorScheme.primary,
           title: Text(
             'My Vehicles',
             style: TextStyle(
-              color: Colors.white,
+              color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.onPrimary),
             onPressed: () => Navigator.pop(context),
           ),
           elevation: 0,
         ),
         body: Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00BCD4)), // Cyan
+            valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
           ),
         ),
       );
@@ -131,41 +133,44 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
 
     if (_auth.currentUser == null) {
       return Scaffold(
-        backgroundColor: Colors.grey[50],
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF00BCD4), // Cyan
+          backgroundColor: theme.colorScheme.primary,
           title: Text(
             'My Vehicles',
             style: TextStyle(
-              color: Colors.white,
+              color: theme.colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.onPrimary),
             onPressed: () => Navigator.pop(context),
           ),
           elevation: 0,
         ),
         body: Center(
-          child: Text('Please login to view your vehicles.'),
+          child: Text(
+            'Please login to view your vehicles.',
+            style: TextStyle(color: theme.colorScheme.onBackground),
+          ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF00BCD4), // Cyan
+        backgroundColor: theme.colorScheme.primary,
         title: Text(
           'My Vehicles',
           style: TextStyle(
-            color: Colors.white,
+            color: theme.colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         elevation: 0,
@@ -180,7 +185,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
               child: ElevatedButton(
                 onPressed: () => _showAddVehicleDialog(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00BCD4), // Cyan
+                  backgroundColor: theme.colorScheme.primary,
                   padding: EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -189,12 +194,12 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add, color: Colors.white),
+                    Icon(Icons.add, color: theme.colorScheme.onPrimary),
                     SizedBox(width: 8),
                     Text(
                       'Add New Vehicle',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: theme.colorScheme.onPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -247,7 +252,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00BCD4)), // Cyan
+                        valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
                       ),
                     );
                   }
@@ -264,7 +269,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                   return ListView.builder(
                     itemCount: vehicles.length,
                     itemBuilder: (context, index) {
-                      return _buildVehicleCard(vehicles[index]);
+                      return _buildVehicleCard(vehicles[index], theme);
                     },
                   );
                 },
@@ -308,16 +313,16 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
     );
   }
 
-  Widget _buildVehicleCard(Vehicle vehicle) {
+  Widget _buildVehicleCard(Vehicle vehicle, ThemeData theme) {
     return Container(
       margin: EdgeInsets.only(bottom: 16),
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: theme.shadowColor.withOpacity(0.05),
             spreadRadius: 1,
             blurRadius: 3,
             offset: Offset(0, 1),
@@ -332,12 +337,12 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF00BCD4), // Cyan
+              color: theme.colorScheme.primary,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Icon(
               Icons.directions_car,
-              color: Colors.white,
+              color: theme.colorScheme.onPrimary,
               size: 24,
             ),
           ),
@@ -352,7 +357,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+                    color: theme.colorScheme.onBackground,
                   ),
                 ),
                 SizedBox(height: 4),
@@ -360,7 +365,7 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                   vehicle.vehicleType,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onBackground.withOpacity(0.7),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -371,20 +376,20 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
+                        color: theme.colorScheme.onBackground.withOpacity(0.7),
                       ),
                     ),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: theme.scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         vehicle.licensePlate,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
+                          color: theme.colorScheme.onBackground.withOpacity(0.7),
                         ),
                       ),
                     ),
@@ -398,14 +403,14 @@ class _MyVehiclesScreenState extends State<MyVehiclesScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
+                        color: theme.colorScheme.onBackground.withOpacity(0.7),
                       ),
                     ),
                     Text(
                       vehicle.color,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        color: theme.colorScheme.onBackground.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -598,19 +603,21 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: const Color(0xFF00BCD4), // Cyan
+        backgroundColor: theme.colorScheme.primary,
         title: Text(
           widget.vehicle == null ? 'Add Vehicle' : 'Edit Vehicle',
           style: TextStyle(
-            color: Colors.white,
+            color: theme.colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         elevation: 0,
@@ -626,25 +633,25 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTextField('Make', _makeController, 'e.g., Toyota'),
+                      _buildTextField('Make', _makeController, 'e.g., Toyota', theme),
                       SizedBox(height: 16),
-                      _buildTextField('Model', _modelController, 'e.g., Camry'),
+                      _buildTextField('Model', _modelController, 'e.g., Camry', theme),
                       SizedBox(height: 16),
-                      _buildTextField('Year', _yearController, 'e.g., 2020', TextInputType.number),
+                      _buildTextField('Year', _yearController, 'e.g., 2020', theme, TextInputType.number),
                       SizedBox(height: 16),
-                      _buildTextField('License Plate', _licensePlateController, 'e.g., ABC123'),
+                      _buildTextField('License Plate', _licensePlateController, 'e.g., ABC123', theme),
                       SizedBox(height: 16),
                       _buildDropdown('Color', _selectedColor, _colors, (value) {
                         setState(() {
                           _selectedColor = value!;
                         });
-                      }),
+                      }, theme),
                       SizedBox(height: 16),
                       _buildDropdown('Vehicle Type', _selectedVehicleType, _vehicleTypes, (value) {
                         setState(() {
                           _selectedVehicleType = value!;
                         });
-                      }),
+                      }, theme),
                     ],
                   ),
                 ),
@@ -661,7 +668,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text('Cancel'),
+                      child: Text('Cancel', style: TextStyle(color: theme.colorScheme.onBackground)),
                     ),
                   ),
                   SizedBox(width: 16),
@@ -669,7 +676,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _saveVehicle,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00BCD4), // Cyan
+                        backgroundColor: theme.colorScheme.primary,
                         padding: EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -681,12 +688,12 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
                               ),
                             )
                           : Text(
                               widget.vehicle == null ? 'Add Vehicle' : 'Update Vehicle',
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(color: theme.colorScheme.onPrimary),
                             ),
                     ),
                   ),
@@ -699,16 +706,16 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, String hint, [TextInputType? keyboardType]) {
+  Widget _buildTextField(String label, TextEditingController controller, String hint, ThemeData theme, [TextInputType? keyboardType]) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '$label *',
           style: TextStyle(
-            fontSize: 16, // Slightly larger
-            fontWeight: FontWeight.bold, // Make bolder
-            color: Colors.grey[800], // Darker for emphasis
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onBackground,
           ),
         ),
         SizedBox(height: 8),
@@ -722,7 +729,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFF00BCD4)), // Cyan
+              borderSide: BorderSide(color: theme.colorScheme.primary),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -743,16 +750,16 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
     );
   }
 
-  Widget _buildDropdown(String label, String value, List<String> items, Function(String?) onChanged) {
+  Widget _buildDropdown(String label, String value, List<String> items, Function(String?) onChanged, ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '$label *',
           style: TextStyle(
-            fontSize: 16, // Slightly larger
-            fontWeight: FontWeight.bold, // Make bolder
-            color: Colors.grey[800], // Darker for emphasis
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onBackground,
           ),
         ),
         SizedBox(height: 8),
@@ -764,14 +771,14 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFF00BCD4)), // Cyan
+              borderSide: BorderSide(color: theme.colorScheme.primary),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
           items: items.map((String item) {
             return DropdownMenuItem<String>(
               value: item,
-              child: Text(item),
+              child: Text(item, style: TextStyle(color: theme.colorScheme.onBackground)),
             );
           }).toList(),
           onChanged: onChanged,
